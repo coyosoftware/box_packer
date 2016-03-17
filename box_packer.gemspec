@@ -13,4 +13,5 @@ Gem::Specification.new do |s|
   s.require_path = 'lib'
   s.add_runtime_dependency 'rasem', '~> 0.6'
   s.add_development_dependency 'rspec', '~> 3.1', '>= 3.1.0'
+  s.add_development_dependency 'debugger'
 end

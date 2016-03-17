@@ -2,38 +2,28 @@ require 'delegate'
 
 module BoxPacker
   class Packing < SimpleDelegator
-    attr_reader :remaining_weight, :remaining_volume
+    attr_reader :remaining_area
 
-    def initialize(total_volume, total_weight)
+    def initialize(total_area)
       super([])
-      @remaining_volume = total_volume
-      @remaining_weight = total_weight
+      @remaining_area = total_area
     end
 
     def <<(item)
-      @remaining_volume -= item.volume
-      @remaining_weight -= item.weight if weight?(item)
+      @remaining_area -= item.area
       super
     end
 
     def fit?(item)
       return false if include?(item)
-      return false if remaining_volume < item.volume
-      return false if weight?(item) && remaining_weight < item.weight
+      return false if remaining_area < item.area
       true
     end
 
     def to_s
-      s = "|  Packing| Remaining Volume:#{remaining_volume}"
-      s << " Remaining Weight:#{remaining_weight}" if remaining_weight
+      s = "|  Packing| Remaining Area:#{remaining_area}"
       s << "\n"
       s << map(&:to_s).join
-    end
-
-    private
-
-    def weight?(item)
-      remaining_weight && item.weight
     end
   end
 end

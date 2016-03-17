@@ -4,11 +4,11 @@ module BoxPacker
       new(*args)
     end
 
-    def initialize(x, y, z)
-      @x, @y, @z = x, y, z
+    def initialize(x, y)
+      @x, @y = x, y
     end
 
-    attr_reader :x, :y, :z
+    attr_reader :x, :y
 
     def +(other)
       self.class.new(*zip_map(other, :+))
@@ -19,19 +19,15 @@ module BoxPacker
     end
 
     def width
-      self.class.new(x, 0, 0)
+      self.class.new(x, 0)
     end
 
     def height
-      self.class.new(0, y, 0)
-    end
-
-    def depth
-      self.class.new(0, 0, z)
+      self.class.new(0, y)
     end
 
     def to_a
-      [x, y, z]
+      [x, y]
     end
 
     def ==(other)

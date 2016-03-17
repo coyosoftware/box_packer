@@ -11,14 +11,14 @@ module BoxPacker
   end
 
   class Container < Box
-    attr_accessor :label, :weight_limit, :packings_limit
-    attr_reader :items, :packing, :packings, :packed_successfully
+    attr_accessor :label, :packings_limit
+    attr_reader :items, :packing, :packings, :packed_successfully, :orientation
 
     def initialize(dimensions, opts = {}, &b)
       super(Dimensions[*dimensions])
       @label = opts[:label]
-      @weight_limit = opts[:weight_limit]
       @packings_limit = opts[:packings_limit]
+      @orientation = opts[:orientation].nil? ? :width : opts[:orientation]
       @items = opts[:items] || []
       orient!
       instance_exec(&b) if b
@@ -51,7 +51,7 @@ module BoxPacker
     end
 
     def new_packing!
-      @packing = Packing.new(volume, weight_limit)
+      @packing = Packing.new(area)
       @packings << @packing
     end
 
@@ -59,8 +59,10 @@ module BoxPacker
       s = "\n|Container|"
       s << " #{label}" if label
       s << " #{dimensions}"
-      s << " Weight Limit:#{weight_limit}" if weight_limit
+      s << " Orientation:#{orientation.to_s}"
       s << " Packings Limit:#{packings_limit}" if packings_limit
+      s << " Used width(s):#{used_width}"
+      s << " Used height(s):#{used_height}"
       s << "\n"
       s << (packed_successfully ? packings.map(&:to_s).join : '|         | Did Not Pack!')
     end
@@ -71,23 +73,51 @@ module BoxPacker
       exporter.save(filename)
     end
 
+    def used_width
+      return nil unless @packed_successfully
+      @packings.map do |packing|
+        max = packing.max{|a, b| (a.position + a.dimensions).x <=> (b.position + b.dimensions).x}
+
+        (max.position + max.dimensions).x
+      end
+    end
+
+    def used_height
+      return nil unless @packed_successfully
+      @packings.map do |packing|
+        max = packing.max{|a, b| (a.position + a.dimensions).y <=> (b.position + b.dimensions).y}
+
+        (max.position + max.dimensions).y
+      end
+    end
+
+    def remaining_width
+      return nil unless @packed_successfully
+      
+      used_widths = used_width
+
+      used_widths.map do |_used_width|
+        dimensions.x - _used_width
+      end
+    end
+
+    def remaining_height
+      return nil unless @packed_successfully
+      
+      used_heights = used_height
+
+      used_heights.map do |_used_height|
+        dimensions.y - _used_height
+      end
+    end
+
     private
 
     def packable?
       return false if items.empty?
-      total_weight = 0
 
       items.each do |item|
-        if weight_limit && item.weight
-          return false if item.weight > weight_limit
-          total_weight += item.weight
-        end
-
         return false unless self >= item
-      end
-
-      if weight_limit && packings_limit
-        return total_weight <= weight_limit * packings_limit
       end
 
       true

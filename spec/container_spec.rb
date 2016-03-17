@@ -2,16 +2,16 @@ require 'box_packer/container'
 
 module BoxPacker
   describe Container do
-    subject(:container) { Container.new([25, 30, 15]) }
+    subject(:container) { Container.new([30, 32]) }
 
     it { expect(container.packings).to eql(nil) }
 
     context 'with items' do
       let(:items) do
         [
-          Item.new([15, 24, 8], weight: 25),
-          Item.new([2,  1, 2], weight:  6),
-          Item.new([9,  9, 10], weight: 30)
+          Item.new([15, 26]),
+          Item.new([2,  1]),
+          Item.new([9,  9])
         ]
       end
       before { container.items = items }
@@ -24,9 +24,9 @@ module BoxPacker
         describe '#prepare_to_pack!' do
           let(:expected_dimensions)do
             [
-              Dimensions[24, 15, 8],
-              Dimensions[2, 2, 1],
-              Dimensions[10, 9, 9]
+              Dimensions[15, 26],
+              Dimensions[2, 1],
+              Dimensions[9, 9]
             ]
           end
 
@@ -63,26 +63,119 @@ module BoxPacker
         end
 
         context 'with an item to large' do
-          before { container.items[0].dimensions = Dimensions[26, 34, 8] }
+          before { container.items[0].dimensions = Dimensions[26, 34] }
           it { expect(container.send(:packable?)).to be(false) }
         end
+      end
 
-        context 'with a weight limit thats lighter than one of the items' do
-          before { container.weight_limit = 24 }
-          it { expect(container.send(:packable?)).to be(false) }
+      describe "#used_width" do
+        context "not packed yet" do
+          it { expect(container.send(:used_width)).to be_nil }
         end
 
-        context 'with a packings limit of one packing' do
-          before { container.packings_limit = 1 }
+        context "packed" do
+          context "for width orientation" do
+            subject(:container) { Container.new([30, 32], orientation: :width) }
 
-          context 'with a weight limit thats lighter than items' do
-            before { container.weight_limit = 50 }
-            it { expect(container.send(:packable?)).to be(false) }
+            before do
+              container.send(:pack!)
+            end
+
+            it { expect(container.send(:used_width)).to match_array([24]) }
           end
 
-          context 'with a weight limit thats heavier than items' do
-            before { container.weight_limit = 70 }
-            it { expect(container.send(:packable?)).to be(true) }
+          context "for height orientation" do
+            subject(:container) { Container.new([30, 32], orientation: :height) }
+
+            before do
+              container.send(:pack!)
+            end
+
+            it { expect(container.send(:used_width)).to match_array([24]) }
+          end
+        end
+      end
+
+      describe "#remaining_width" do
+        context "not packed yet" do
+          it { expect(container.send(:remaining_width)).to be_nil }
+        end
+
+        context "packed" do
+          context "for width orientation" do
+            subject(:container) { Container.new([30, 32], orientation: :width) }
+
+            before do
+              container.send(:pack!)
+            end
+
+            it { expect(container.send(:remaining_width)).to match_array([6]) }
+          end
+
+          context "for height orientation" do
+            subject(:container) { Container.new([30, 32], orientation: :height) }
+
+            before do
+              container.send(:pack!)
+            end
+
+            it { expect(container.send(:remaining_width)).to match_array([6]) }
+          end
+        end
+      end
+
+      describe "#used_height" do
+        context "not packed yet" do
+          it { expect(container.send(:used_height)).to be_nil }
+        end
+
+        context "packed" do
+          context "for width orientation" do
+            subject(:container) { Container.new([30, 32], orientation: :width) }
+
+            before do
+              container.send(:pack!)
+            end
+
+            it { expect(container.send(:used_height)).to match_array([26]) }
+          end
+
+          context "for height orientation" do
+            subject(:container) { Container.new([30, 32], orientation: :height) }
+
+            before do
+              container.send(:pack!)
+            end
+
+            it { expect(container.send(:used_height)).to match_array([26]) }
+          end
+        end
+      end
+
+      describe "#remaining_height" do
+        context "not packed yet" do
+          it { expect(container.send(:remaining_height)).to be_nil }
+        end
+
+        context "packed" do
+          context "for width orientation" do
+            subject(:container) { Container.new([30, 33], orientation: :width) }
+
+            before do
+              container.send(:pack!)
+            end
+
+            it { expect(container.send(:remaining_height)).to match_array([7]) }
+          end
+
+          context "for height orientation" do
+            subject(:container) { Container.new([30, 33], orientation: :height) }
+
+            before do
+              container.send(:pack!)
+            end
+
+            it { expect(container.send(:remaining_height)).to match_array([7]) }
           end
         end
       end

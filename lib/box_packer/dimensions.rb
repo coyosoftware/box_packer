@@ -2,8 +2,8 @@ require_relative 'vector'
 
 module BoxPacker
   class Dimensions < Vector
-    def volume
-      @volume ||= to_a.reduce(&:*)
+    def area
+      @area ||= to_a.reduce(&:*)
     end
 
     def >=(other)

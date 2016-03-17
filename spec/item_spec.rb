@@ -2,26 +2,52 @@ require 'box_packer/item'
 
 module BoxPacker
   describe Item do
-    subject(:item) { Item.new(dimensions) }
-    let(:dimensions) { [12, 5, 7] }
+    let(:dimensions) { [12, 5] }
 
     describe '#rotate_to_fit_into' do
-      context 'when box is larger than box' do
-        let(:box) { Box.new(Dimensions[6, 15, 9]) }
-        let(:rotated_dimensions) { Dimensions[5, 12, 7] }
+      subject(:item) { Item.new(dimensions) }
 
-        it 'fits and orientation is rotated to fit' do
-          expect(item.rotate_to_fit_into(box)).to be(true)
-          expect(item.dimensions).to eql(rotated_dimensions)
+      context "when item allow rotation" do
+        context 'when box is larger than box' do
+          let(:box) { Box.new(Dimensions[6, 15]) }
+          let(:rotated_dimensions) { Dimensions[5, 12] }
+
+          it 'fits and orientation is rotated to fit' do
+            expect(item.rotate_to_fit_into(box)).to be(true)
+            expect(item.dimensions).to eql(rotated_dimensions)
+          end
+        end
+
+        context 'when other box has a smaller side than box' do
+          let(:box) { Box.new(Dimensions[11, 6]) }
+
+          it 'does not fit and orientation is unchanged' do
+            expect(item.rotate_to_fit_into(box)).to be(false)
+            expect(item.dimensions).to eql(Dimensions[*dimensions])
+          end
         end
       end
 
-      context 'when other box has a smaller side than box' do
-        let(:box) { Box.new(Dimensions[11, 6, 7]) }
+      context "when item does not allow rotation" do
+        subject(:item) { Item.new(dimensions, {:allow_rotation => false}) }
 
-        it 'does not fit and orientation is unchanged' do
-          expect(item.rotate_to_fit_into(box)).to be(false)
-          expect(item.dimensions).to eql(Dimensions[*dimensions])
+        context 'when box is larger than box' do
+          let(:box) { Box.new(Dimensions[6, 15]) }
+          let(:rotated_dimensions) { Dimensions[5, 12] }
+
+          it 'does not fit and orientation is unchanged' do
+            expect(item.rotate_to_fit_into(box)).to be(false)
+            expect(item.dimensions).to eql(Dimensions[*dimensions])
+          end
+        end
+
+        context 'when other box has a smaller side than box' do
+          let(:box) { Box.new(Dimensions[11, 6]) }
+
+          it 'does not fit and orientation is unchanged' do
+            expect(item.rotate_to_fit_into(box)).to be(false)
+            expect(item.dimensions).to eql(Dimensions[*dimensions])
+          end
         end
       end
     end
