@@ -4,7 +4,7 @@ module BoxPacker
   class SVGExporter
     def initialize(container, opts = {})
       @container = container
-      @images = []
+      @image = nil
       @margin  = opts[:margin] || 10
 
       dimensions = container.dimensions.to_a
@@ -19,12 +19,10 @@ module BoxPacker
     end
 
     def save(filename)
-      images.each_with_index do |image, i|
-        image.close
+      image.close
 
-        File.open("#{filename}#{i + 1}.svg", 'w') do |f|
-          f << image.output
-        end
+      File.open("#{filename}.svg", 'w') do |f|
+        f << image.output
       end
     end
 
@@ -45,11 +43,10 @@ module BoxPacker
 
     private
 
-    attr_reader :container, :scale, :margin, :images, :image, :image_width, :image_height
+    attr_reader :container, :scale, :margin, :image, :image_width, :image_height
 
     def new_image
       @image = Rasem::SVGImage.new(image_width, image_height)
-      images << image
     end
 
     class Face
