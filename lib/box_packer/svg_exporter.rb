@@ -7,7 +7,7 @@ module BoxPacker
       @image = nil
       @margin  = opts[:margin] || 10
 
-      dimensions = container.dimensions.to_a
+      dimensions = container.dimensions_wihout_offsets.to_a 
       longest_side = dimensions.max
       legend_size = 20
       legend_padding = 10
@@ -28,7 +28,7 @@ module BoxPacker
 
     def draw
       container.packings.each do |packing|
-        Face.reset(margin, scale, container.dimensions)
+        Face.reset(margin, scale, container.dimensions_wihout_offsets)
         new_image
 
         face = Face.new(packing)

@@ -4,7 +4,7 @@ require_relative 'packer'
 require_relative 'packing'
 require_relative 'svg_exporter'
 require_relative 'box'
-
+require 'debugger'
 module BoxPacker
   def self.container(*args, &b)
     Container.new(*args, &b)
@@ -13,12 +13,19 @@ module BoxPacker
   class Container < Box
     attr_accessor :label, :packings_limit
     attr_reader :items, :packing, :packings, :packed_successfully, :orientation
+    attr_reader :offset_left, :offset_top, :offset_right, :offset_bottom
 
     def initialize(dimensions, opts = {}, &b)
-      super(Dimensions[*dimensions])
-      @label = opts[:label]
+      @offset_left    = (opts[:offsets].nil? || opts[:offsets][:left].nil?)   ? 0 : opts[:offsets][:left]
+      @offset_top     = (opts[:offsets].nil? || opts[:offsets][:top].nil?)    ? 0 : opts[:offsets][:top]
+      @offset_right   = (opts[:offsets].nil? || opts[:offsets][:right].nil?)  ? 0 : opts[:offsets][:right]
+      @offset_bottom  = (opts[:offsets].nil? || opts[:offsets][:bottom].nil?) ? 0 : opts[:offsets][:bottom]
+
+      super(Dimensions[*dimensions], opts)
+
+      @orientation    = opts[:orientation].nil? ? :width : opts[:orientation]
+      @label          = opts[:label]
       @packings_limit = opts[:packings_limit]
-      @orientation = opts[:orientation].nil? ? :width : opts[:orientation]
       @items = opts[:items] || []
       orient!
       instance_exec(&b) if b
@@ -78,7 +85,7 @@ module BoxPacker
       @packings.map do |packing|
         max = packing.max{|a, b| (a.position + a.dimensions).x <=> (b.position + b.dimensions).x}
 
-        (max.position + max.dimensions).x
+        (max.position + max.dimensions).x - offset_left
       end
     end
 
@@ -87,7 +94,7 @@ module BoxPacker
       @packings.map do |packing|
         max = packing.max{|a, b| (a.position + a.dimensions).y <=> (b.position + b.dimensions).y}
 
-        (max.position + max.dimensions).y
+        (max.position + max.dimensions).y - offset_bottom
       end
     end
 
@@ -97,7 +104,7 @@ module BoxPacker
       used_widths = used_width
 
       used_widths.map do |_used_width|
-        dimensions.x - _used_width
+        dimensions_wihout_offsets.x - _used_width
       end
     end
 
@@ -107,7 +114,7 @@ module BoxPacker
       used_heights = used_height
 
       used_heights.map do |_used_height|
-        dimensions.y - _used_height
+        dimensions_wihout_offsets.y - _used_height
       end
     end
 

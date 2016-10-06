@@ -7,12 +7,25 @@ module BoxPacker
     extend Forwardable
 
     def initialize(dimensions, opts = {})
-      @dimensions = dimensions
-      @position = opts[:position] || Position[0, 0]
+      @dimensions_wihout_offsets = dimensions
+
+      position_x = 0
+      position_y = 0
+
+      if opts[:offsets].nil?
+        @dimensions = dimensions
+      else
+        @dimensions = dimensions - Dimensions[opts[:offsets][:right].to_i, opts[:offsets][:top].to_i] - Dimensions[opts[:offsets][:left].to_i, opts[:offsets][:bottom].to_i]
+
+        position_x = opts[:offsets][:left].to_i
+        position_y = opts[:offsets][:bottom].to_i
+      end
+
+      @position = opts[:position] || Position[position_x, position_y]
     end
 
     def_delegators :dimensions, :area, :each_rotation, :width, :height
-    attr_accessor :dimensions, :position
+    attr_accessor :dimensions, :position, :dimensions_wihout_offsets
 
     def orient!
       @dimensions = Dimensions[*dimensions.to_a]

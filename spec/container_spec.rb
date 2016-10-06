@@ -2,7 +2,12 @@ require 'box_packer/container'
 
 module BoxPacker
   describe Container do
-    subject(:container) { Container.new([30, 32]) }
+    subject(:container) { Container.new([30, 32], offsets: {
+      left: 2,
+      top: 1,
+      right: 3,
+      bottom: 1
+    }) }
 
     it { expect(container.packings).to eql(nil) }
 
@@ -82,6 +87,18 @@ module BoxPacker
             end
 
             it { expect(container.send(:used_width)).to match_array([24]) }
+
+            context "with offsets" do
+              subject(:container) { Container.new([30, 32], orientation: :width, offsets: {
+                left: 2,
+                right: 3,
+                top: 1,
+                bottom: 1
+                }
+              ) }
+
+              it { expect(container.send(:used_width)).to match_array([24]) }
+            end
           end
 
           context "for height orientation" do
@@ -92,6 +109,18 @@ module BoxPacker
             end
 
             it { expect(container.send(:used_width)).to match_array([24]) }
+
+            context "with offsets" do
+              subject(:container) { Container.new([30, 32], orientation: :height, offsets: {
+                left: 2,
+                right: 3,
+                top: 1,
+                bottom: 1
+                }
+              ) }
+
+              it { expect(container.send(:used_width)).to match_array([24]) }
+            end
           end
         end
       end
@@ -110,6 +139,18 @@ module BoxPacker
             end
 
             it { expect(container.send(:remaining_width)).to match_array([6]) }
+
+            context 'with offsets' do
+              subject(:container) { Container.new([30, 32], orientation: :width, offsets: {
+                left: 2,
+                right: 3,
+                top: 1,
+                bottom: 1
+                }
+              ) }
+
+              it { expect(container.send(:remaining_width)).to match_array([6]) }
+            end
           end
 
           context "for height orientation" do
@@ -120,6 +161,18 @@ module BoxPacker
             end
 
             it { expect(container.send(:remaining_width)).to match_array([6]) }
+
+            context 'with offsets' do
+              subject(:container) { Container.new([30, 32], orientation: :height, offsets: {
+                left: 2,
+                right: 3,
+                top: 1,
+                bottom: 1
+                }
+              ) }
+
+              it { expect(container.send(:remaining_width)).to match_array([6]) }
+            end
           end
         end
       end
@@ -138,6 +191,18 @@ module BoxPacker
             end
 
             it { expect(container.send(:used_height)).to match_array([26]) }
+
+            context "with offsets" do
+              subject(:container) { Container.new([30, 32], orientation: :width, offsets: {
+                left: 2,
+                right: 3,
+                top: 1,
+                bottom: 1
+                }
+              ) }
+
+              it { expect(container.send(:used_height)).to match_array([26]) }
+            end
           end
 
           context "for height orientation" do
@@ -148,6 +213,18 @@ module BoxPacker
             end
 
             it { expect(container.send(:used_height)).to match_array([26]) }
+
+            context "with offsets" do
+              subject(:container) { Container.new([30, 32], orientation: :height, offsets: {
+                left: 2,
+                right: 3,
+                top: 1,
+                bottom: 1
+                }
+              ) }
+
+              it { expect(container.send(:used_height)).to match_array([26]) }
+            end
           end
         end
       end
@@ -166,6 +243,18 @@ module BoxPacker
             end
 
             it { expect(container.send(:remaining_height)).to match_array([7]) }
+
+            context "with offsets" do
+              subject(:container) { Container.new([30, 33], orientation: :width, offsets: {
+                left: 2,
+                right: 3,
+                top: 1,
+                bottom: 1
+                }
+              ) }
+
+              it { expect(container.send(:remaining_height)).to match_array([7]) }
+            end
           end
 
           context "for height orientation" do
@@ -176,6 +265,18 @@ module BoxPacker
             end
 
             it { expect(container.send(:remaining_height)).to match_array([7]) }
+
+            context "with offsets" do
+              subject(:container) { Container.new([30, 33], orientation: :height, offsets: {
+                left: 2,
+                right: 3,
+                top: 1,
+                bottom: 1
+                }
+              ) }
+
+              it { expect(container.send(:remaining_height)).to match_array([7]) }
+            end
           end
         end
       end

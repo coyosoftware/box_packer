@@ -26,6 +26,54 @@ module BoxPacker
           expect(container.pack!).to eql(1)
           expect(container.packed_successfully).to be(true)
         end
+
+        context 'when the left offset make them not fit' do
+          subject(:container) { Container.new(dimensions, offsets: {
+            left:  1
+            }, packings_limit: 1
+          ) }
+
+          it do
+            expect(container.pack!).to be(false)
+            expect(container.packed_successfully).to be(false)
+          end
+        end
+
+        context 'when the right offset make them not fit' do
+          subject(:container) { Container.new(dimensions, offsets: {
+            right:  1
+            }, packings_limit: 1
+          ) }
+
+          it do
+            expect(container.pack!).to be(false)
+            expect(container.packed_successfully).to be(false)
+          end
+        end
+
+        context 'when the top offset make them not fit' do
+          subject(:container) { Container.new(dimensions, offsets: {
+            top:  1
+            }, packings_limit: 1
+          ) }
+
+          it do
+            expect(container.pack!).to be(false)
+            expect(container.packed_successfully).to be(false)
+          end
+        end
+
+        context 'when the bottom offset make them not fit' do
+          subject(:container) { Container.new(dimensions, offsets: {
+            bottom:  1
+            }, packings_limit: 1
+          ) }
+
+          it do
+            expect(container.pack!).to be(false)
+            expect(container.packed_successfully).to be(false)
+          end
+        end
       end
 
       context 'with items that fit exactly in three packings' do
