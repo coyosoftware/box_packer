@@ -151,6 +151,12 @@ module BoxPacker
 
               it { expect(container.send(:remaining_width)).to match_array([6]) }
             end
+
+            context 'remove exceeding' do
+              subject(:container) { Container.new([30, 32], orientation: :width, remove_exceeding: true) }
+
+              it { expect(container.send(:remaining_width)).to match_array([0]) }
+            end
           end
 
           context "for height orientation" do
@@ -170,6 +176,12 @@ module BoxPacker
                 bottom: 1
                 }
               ) }
+
+              it { expect(container.send(:remaining_width)).to match_array([6]) }
+            end
+
+            context 'remove exceeding' do
+              subject(:container) { Container.new([30, 32], orientation: :height, remove_exceeding: true) }
 
               it { expect(container.send(:remaining_width)).to match_array([6]) }
             end
@@ -255,6 +267,12 @@ module BoxPacker
 
               it { expect(container.send(:remaining_height)).to match_array([7]) }
             end
+
+            context 'remove exceeding' do
+              subject(:container) { Container.new([30, 33], orientation: :width, remove_exceeding: true) }
+
+              it { expect(container.send(:remaining_height)).to match_array([7]) }
+            end
           end
 
           context "for height orientation" do
@@ -276,6 +294,12 @@ module BoxPacker
               ) }
 
               it { expect(container.send(:remaining_height)).to match_array([7]) }
+            end
+
+            context 'remove exceeding' do
+              subject(:container) { Container.new([30, 33], orientation: :height, remove_exceeding: true) }
+
+              it { expect(container.send(:remaining_height)).to match_array([0]) }
             end
           end
         end

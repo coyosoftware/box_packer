@@ -14,6 +14,7 @@ module BoxPacker
     attr_accessor :label, :packings_limit
     attr_reader :items, :packing, :packings, :packed_successfully, :orientation
     attr_reader :offset_left, :offset_top, :offset_right, :offset_bottom
+    attr_reader :remove_exceeding
 
     def initialize(dimensions, opts = {}, &b)
       @offset_left    = (opts[:offsets].nil? || opts[:offsets][:left].nil?)   ? 0 : opts[:offsets][:left]
@@ -26,6 +27,7 @@ module BoxPacker
       @orientation    = opts[:orientation].nil? ? :width : opts[:orientation]
       @label          = opts[:label]
       @packings_limit = opts[:packings_limit]
+      @remove_exceeding = opts[:remove_exceeding].nil? ? false : opts[:remove_exceeding]
       @items = opts[:items] || []
       orient!
       instance_exec(&b) if b
@@ -75,7 +77,7 @@ module BoxPacker
     end
 
     def draw!(filename, opts = {})
-      exporter = SVGExporter.new(self, opts)
+      exporter = SVGExporter.new(self, opts.merge(remove_exceeding: remove_exceeding))
       exporter.draw
       exporter.save(filename)
     end
@@ -83,38 +85,38 @@ module BoxPacker
     def used_width
       return nil unless @packed_successfully
       @packings.map do |packing|
-        max = packing.max{|a, b| (a.position + a.dimensions).x <=> (b.position + b.dimensions).x}
-
-        (max.position + max.dimensions).x - offset_left
+        max = packing.used_width(offset_left)
       end
     end
 
     def used_height
       return nil unless @packed_successfully
       @packings.map do |packing|
-        max = packing.max{|a, b| (a.position + a.dimensions).y <=> (b.position + b.dimensions).y}
-
-        (max.position + max.dimensions).y - offset_bottom
+        max = packing.used_height(offset_bottom)
       end
     end
 
     def remaining_width
       return nil unless @packed_successfully
-      
-      used_widths = used_width
 
-      used_widths.map do |_used_width|
-        dimensions_wihout_offsets.x - _used_width
+      used_width.map do |_used_width|
+        if remove_exceeding
+          orientation == :width ? 0 : dimensions_without_offsets.x - _used_width
+        else
+          dimensions_without_offsets.x - _used_width
+        end
       end
     end
 
     def remaining_height
       return nil unless @packed_successfully
-      
-      used_heights = used_height
 
-      used_heights.map do |_used_height|
-        dimensions_wihout_offsets.y - _used_height
+      used_height.map do |_used_height|
+        if remove_exceeding
+          orientation == :height ? 0 : dimensions_without_offsets.y - _used_height
+        else
+          dimensions_without_offsets.y - _used_height
+        end
       end
     end
 

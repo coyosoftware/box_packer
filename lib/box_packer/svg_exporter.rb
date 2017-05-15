@@ -2,33 +2,45 @@ require 'rasem'
 
 module BoxPacker
   class SVGExporter
-    def initialize(container, opts = {})
+    def initialize(container, options = {})
       @container = container
-      @image = nil
+      @opts = options
+      @images = []
       @margin  = opts[:margin] || 10
-
-      dimensions = container.dimensions_wihout_offsets.to_a 
-      longest_side = dimensions.max
-      legend_size = 20
-      legend_padding = 10
-      scale_longest_side_to = opts[:scale_longest_side_to] || 400
-
-      @scale = scale_longest_side_to / longest_side.to_f
-      @image_width  = (dimensions[0] * scale) + (margin * 3)
-      @image_height = ((dimensions[1] * scale + ((legend_padding + legend_size) * container.packing.count)))  + (margin * 3)
     end
 
     def save(filename)
-      image.close
+      images.each_with_index do |image, i|
+        image.close
 
-      File.open("#{filename}.svg", 'w') do |f|
-        f << image.output
+        File.open("#{filename}#{i + 1}.svg", 'w') do |f|
+          f << image.output
+        end
       end
     end
 
     def draw
       container.packings.each do |packing|
-        Face.reset(margin, scale, container.dimensions_wihout_offsets)
+        dimensions = if opts[:remove_exceeding]
+          if container.orientation == :width
+            Dimensions[packing.used_width, container.dimensions_without_offsets.y]
+          else
+            Dimensions[container.dimensions_without_offsets.x, packing.used_height]
+          end
+        else
+          container.dimensions_without_offsets
+        end
+
+        longest_side = dimensions.to_a.max
+        legend_size = 20
+        legend_padding = 10
+        scale_longest_side_to = opts[:scale_longest_side_to] || 400
+
+        @scale = scale_longest_side_to / longest_side.to_f
+        @image_width  = (dimensions.to_a[0] * scale) + (margin * 3)
+        @image_height = ((dimensions.to_a[1] * scale + ((legend_padding + legend_size) * container.packing.count)))  + (margin * 3)
+
+        Face.reset(margin, scale, dimensions)
         new_image
 
         face = Face.new(packing)
@@ -43,10 +55,11 @@ module BoxPacker
 
     private
 
-    attr_reader :container, :scale, :margin, :image, :image_width, :image_height
+    attr_reader :container, :scale, :margin, :images, :image, :image_width, :image_height, :opts
 
     def new_image
       @image = Rasem::SVGImage.new(image_width, image_height)
+      images << image
     end
 
     class Face
