@@ -6,7 +6,7 @@ module BoxPacker
       @container = container
       @opts = options
       @images = []
-      @margin  = opts[:margin] || 10
+      @margin  = opts[:margin] || 0
       @desired_id = opts[:desired_id]
     end
 
@@ -60,14 +60,23 @@ module BoxPacker
         container.dimensions_without_offsets
       end
 
-      longest_side = dimensions.to_a.max
       legend_size = 20
       legend_padding = 10
-      scale_longest_side_to = opts[:scale_longest_side_to] || 400
+      scale_size = opts[:scale_size] || :longest
+      scale_size_to = opts[:scale_size_to] || 400
 
-      @scale = scale_longest_side_to / longest_side.to_f
+      side_to_scale = case opts[:scale_size]
+      when :width
+        dimensions.to_a[0]
+      when :height
+        dimensions.to_a[1]
+      else
+        dimensions.to_a.max
+      end
+
+      @scale = scale_size_to / side_to_scale.to_f
       @image_width  = (dimensions.to_a[0] * scale) + (margin * 3)
-      @image_height = ((dimensions.to_a[1] * scale + ((legend_padding + legend_size) * container.packing.count)))  + (margin * 3)
+      @image_height = (dimensions.to_a[1] * scale) + (margin * 3)
 
       Face.reset(margin, scale, dimensions)
       new_image
@@ -76,8 +85,7 @@ module BoxPacker
       image.rectangle(*face.outline, stroke: 'black', stroke_width: 1, fill: 'white')
       face.rectangles_and_labels.each do |h|
         image.rectangle(*h[:rectangle])
-        image.rectangle(*h[:legend][:rectangle])
-        image.text(*h[:legend][:label])
+        image.text(*h[:label])
       end
     end
 
@@ -130,19 +138,12 @@ module BoxPacker
           y = axes[1] + item.position.send(j) * @@scale
           width = item.dimensions.send(i) * @@scale
           height = item.dimensions.send(j) * @@scale
-          label_x = x + width / 2 - item.label.length
+          label_x = x + 5
           label_y = y + height / 2
-          legend_x = 10
-          legend_y = @height + @@legend_padding + (20 * index) + @@legend_padding * (index + 1)
-          label_legend_x = legend_x + 25
-          label_legend_y = legend_y + 15
+
           {
             rectangle: [x, y, width, height, fill: "##{item.color}", stroke: 'black', stroke_width: 1, :"stroke-dasharray" => "2,2"],
-            label: [label_x, label_y, item.label],
-            legend: {
-              rectangle: [legend_x, legend_y, 20, 20, fill: "##{item.color}", stroke: 'black', stroke_width: 1],
-              label: [label_legend_x, label_legend_y, "#{item.label}"]
-            }
+            label: [label_x, label_y, "#{item.label}", :"font-size" => "#{15 * @@scale}px"]
           }
         end
       end
